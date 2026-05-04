@@ -1,49 +1,46 @@
 <?php
-$login = $_POST['login'];
-$pattern_login = "/^[A-Za-z0-9]{5,}$/";
+// register.php
+$login = $_POST['login'] ?? '';
+$email = $_POST['email'] ?? '';
+$password = $_POST['password'] ?? '';
+$confirmPassword = $_POST['confirm_password'] ?? '';
 
-$email = $_POST['email'];
-$pattern_email = "/^[a-zA-Z0-9.]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/";
+$errors = [];
 
-$password = $_POST['password'];
-$pattern_pass = "/^.{8,}$/";
+// Validation patterns
+$patternLogin = '/^[A-Za-z0-9]{5,}$/';
+$patternEmail = '/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/';
+$patternPassword = '/^(?=.*[A-Z])(?=.*\d).{8,}$/';
 
-// $conf_pass = isset($_POST('confirm_password'));
-$conf_pass = $_POST['confirm_password'];
-$pattern_confirm_pass = $pattern_pass;
-
-//condition
-
-//login
-if (preg_match($pattern_login, $login)) {
-    echo "Valeur de login valide <br>";
-} else {
-    echo "Merde ça passe pas ton login! <br>";
-}
-//email
-if (preg_match($pattern_email, $email)) {
-    echo "Valeur d'email valide <br>";
-} else {
-    echo "Merde l'email passe pas !<br>";
+// Check required fields
+if (empty($login) || empty($email) || empty($password) || empty($confirmPassword)) {
+    $errors[] = 'Tous les champs doivent être remplis.';
 }
 
-//pass
-if (preg_match($pattern_pass, $password)) {
-    echo "mdp valide <br>";
-} else {
-    echo "Merde ça pue ton mdp! <br>";
+// Validate login
+if (!empty($login) && !preg_match($patternLogin, $login)) {
+    $errors[] = 'Le login doit contenir uniquement des lettres et des chiffres et comporter au moins 5 caractères.';
 }
 
-//confirmation mdp
-
-if ($password == $conf_pass) {
-    echo " Mot de passe valide <br>";
-} else {
-    echo "T'es con ou quoi? vérifie ton mdp <br>";
+// Validate email
+if (!empty($email) && !preg_match($patternEmail, $email)) {
+    $errors[] = 'L\'adresse email n\'est pas valide.';
 }
 
-if (preg_match($pattern_login, $login) && preg_match($pattern_email, $email) && preg_match($pattern_pass, $password) && $password == $conf_pass) {
-    echo "Login Succès!";
+// Validate password
+if (!empty($password) && !preg_match($patternPassword, $password)) {
+    $errors[] = 'Le mot de passe doit contenir au moins 8 caractères, une majuscule et un chiffre.';
+}
+
+// Confirm password
+if (!empty($password) && !empty($confirmPassword) && $password !== $confirmPassword) {
+    $errors[] = 'La confirmation du mot de passe ne correspond pas.';
+}
+
+if (!empty($errors)) {
+    foreach ($errors as $message) {
+        echo '<p style="color:red;">Erreur : ' . htmlspecialchars($message) . '</p>';
+    }
 } else {
-    echo "Bon ça march pas";
+    echo '<p style="color:green;">Inscription réussie !</p>';
 }
