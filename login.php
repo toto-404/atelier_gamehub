@@ -1,22 +1,27 @@
 <?php
 session_start();
+require 'db.php';
 
-$identifier = $_POST['identifier'] ?? '';
+$identifier = trim($_POST['identifier'] ?? '');
 $password = $_POST['password'] ?? '';
 
-if (empty($identifier) || empty($password)) {
+if ($identifier === '' || $password === '') {
     echo '<p style="color:red;">Erreur : les deux champs sont obligatoires.</p>';
+    echo '<p><a href="login.html">Retour à la connexion</a></p>';
     exit;
 }
 
-// Connexion simulée
-$validIdentifier = 'MamaMia';
-$validPassword = 'MotDePasse1234';
+$stmt = $pdo->prepare('SELECT id, login, password FROM users WHERE login = ? OR email = ?');
+$stmt->execute([$identifier, $identifier]);
+$user = $stmt->fetch();
 
-if ($identifier === $validIdentifier && $password === $validPassword) {
-    $_SESSION['login'] = $identifier;
-    header('Location: index.php');
+if (!$user || !password_verify($password, $user['password'])) {
+    echo '<p style="color:red;">Erreur : identifiant ou mot de passe invalide.</p>';
+    echo '<p><a href="login.html">Retour à la connexion</a></p>';
     exit;
 }
 
-echo '<p style="color:red;">Erreur : identifiant ou mot de passe invalide.</p>';
+$_SESSION['user_id'] = $user['id'];
+$_SESSION['login'] = $user['login'];
+header('Location: index.php');
+exit;
