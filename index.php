@@ -2,7 +2,31 @@
 session_start();
 require 'db.php';
 
-$stmt = $pdo->query('SELECT g.*, u.login AS creator FROM games g JOIN users u ON g.user_id = u.id ORDER BY g.id DESC');
+$search = trim($_GET['search'] ?? '');
+$genre = trim($_GET['genre'] ?? '');
+
+$query = 'SELECT g.*, u.login AS creator FROM games g JOIN users u ON g.user_id = u.id';
+$conditions = [];
+$params = [];
+
+if ($search !== '') {
+    $conditions[] = 'g.title LIKE ?';
+    $params[] = '%' . $search . '%';
+}
+
+if ($genre !== '') {
+    $conditions[] = 'g.genre = ?';
+    $params[] = $genre;
+}
+
+if (!empty($conditions)) {
+    $query .= ' WHERE ' . implode(' AND ', $conditions);
+}
+
+$query .= ' ORDER BY g.id DESC';
+
+$stmt = $pdo->prepare($query);
+$stmt->execute($params);
 $games = $stmt->fetchAll();
 ?>
 <!DOCTYPE html>
@@ -50,10 +74,37 @@ $games = $stmt->fetchAll();
 </header>
 
 <main class="container py-5">
+    <section class="mb-4">
+        <form method="GET" class="row g-3">
+            <div class="col-md-6">
+                <label for="search" class="form-label">Rechercher par titre</label>
+                <input type="text" class="form-control" id="search" name="search" value="<?php echo htmlspecialchars($search); ?>" placeholder="Entrez un titre...">
+            </div>
+            <div class="col-md-4">
+                <label for="genre" class="form-label">Filtrer par genre</label>
+                <select class="form-select" id="genre" name="genre">
+                    <option value="">Tous les genres</option>
+                    <option value="Action" <?php if ($genre === 'Action') echo 'selected'; ?>>Action</option>
+                    <option value="Aventure" <?php if ($genre === 'Aventure') echo 'selected'; ?>>Aventure</option>
+                    <option value="RPG" <?php if ($genre === 'RPG') echo 'selected'; ?>>RPG</option>
+                    <option value="Sport" <?php if ($genre === 'Sport') echo 'selected'; ?>>Sport</option>
+                    <option value="Stratégie" <?php if ($genre === 'Stratégie') echo 'selected'; ?>>Stratégie</option>
+                    <option value="Simulation" <?php if ($genre === 'Simulation') echo 'selected'; ?>>Simulation</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">Rechercher</button>
+            </div>
+        </form>
+    </section>
     <section class="mb-5">
         <h2 class="mb-3">Tous les jeux</h2>
         <?php if (empty($games)) : ?>
-            <div class="alert alert-info">Aucun jeu n'a encore été ajouté.</div>
+            <?php if ($search !== '' || $genre !== '') : ?>
+                <div class="alert alert-info">Aucun jeu ne correspond à votre recherche.</div>
+            <?php else : ?>
+                <div class="alert alert-info">Aucun jeu n'a encore été ajouté.</div>
+            <?php endif; ?>
         <?php else : ?>
             <div class="row g-4">
                 <?php foreach ($games as $game) : ?>

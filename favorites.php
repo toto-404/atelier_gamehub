@@ -72,6 +72,13 @@ $games = $stmt->fetchAll();
                             </div>
                             <div class="card-footer d-flex justify-content-between align-items-center">
                                 <small class="text-muted">Genre : <?php echo htmlspecialchars($game['genre']); ?></small>
+                                <div>
+                                    <a href="edit_game.php?id=<?php echo $game['id']; ?>" class="btn btn-sm btn-outline-primary">Modifier</a>
+                                    <form method="POST" action="delete_game.php" style="display:inline;" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce jeu ?');">
+                                        <input type="hidden" name="id" value="<?php echo $game['id']; ?>">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">Supprimer</button>
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>
