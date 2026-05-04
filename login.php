@@ -1,36 +1,22 @@
 <?php
-// Start the session
 session_start();
 
-$login = $_POST['identifier'];
-$password = $_POST['password'];
+$identifier = $_POST['identifier'] ?? '';
+$password = $_POST['password'] ?? '';
 
-$login_test = "MamaMia";
-$pass = "MotDePasse1234";
-
-if ($login == $login_test) {
-    echo "Ouiii";
-} else {
-    echo "Nooooon";
+if (empty($identifier) || empty($password)) {
+    echo '<p style="color:red;">Erreur : les deux champs sont obligatoires.</p>';
+    exit;
 }
 
-$_SESSION["identifier"] = $login;
-$_SESSION["password"] = $password;
+// Connexion simulée
+$validIdentifier = 'MamaMia';
+$validPassword = 'MotDePasse1234';
 
-
-
-if (!isset($login_test, $pass)) {
-    echo "Les champs sont vide ou invalide <br>";
+if ($identifier === $validIdentifier && $password === $validPassword) {
+    $_SESSION['login'] = $identifier;
+    header('Location: index.php');
+    exit;
 }
 
-if ($_SESSION["identifier"] == $login_test && ($_SESSION["password"]) == $password ) {
-    echo "<h1>Hello$_SESSION[identifier]</h1>";
-    header("Location: index.php");
-    // header("Location: https://www.github.com");
-}
-else{
-        echo "<h1>T'es qui $login</h1>";
-        header("Location: https://www.google.com/search?q=porsche+911");
-
-}
-?>
+echo '<p style="color:red;">Erreur : identifiant ou mot de passe invalide.</p>';
